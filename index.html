@@ -2,34 +2,230 @@
 <html lang="en">
  <head>
   <meta charset="utf-8">
-  <title>Summary</title>
-  <link rel="stylesheet" type="text/css" href="styles.css" media="screen">
+    <title>AboutMe</title>
+    <link rel="icon" href="icon/4.ico" type="imeges/x-icon">
+    <link rel="stylesheet" type="text/css" href="CSS\styles.css">
+	<meta name="autor" content="Zhenya Vovchyk">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+canvas {
+    border: 0px solid black;
+    background-image: url(img/2.gif);
+	opacity: 0.8;
+	position: absolute;
+	top: 100px;
+	right: 300px;
+	padding: 0px;
+    width: 18%;
+    height: 30%;	
+}
+body {
+	background-image: url(#);
+	font-family: arial;
+}
+img {
+    border-radius: 50px;   
+    background-position: left top;
+    background-repeat: repeat;
+    padding: 10px; 
+    width: 200px;
+    height: 250px; 
+}
+#WebPageNote {
+	font-size: 18px;
+	color: blue;
+	}
+#Facebook {
+    font-size: 18px;
+    color: blue ;
+}
+#1 {
+	font-size: 18px;
+	color: blue;
+}
+a {
+text-decoration: none;
+}	
+p {
+	color: black;
+}
+#qwe {
+    position:absolute;
+	top: 1000px;
+	right: 430px;
+    width: 50px;
+    opacity: 0.6;	
+}
+#qwer {
+    position:absolute;
+	top: 390px;
+	right: 450px;
+	padding: 0px;
+    width: 50px;	
+}
+#qwert {
+    position:absolute;
+	top: 420px;
+	right: 430px;
+	padding: 0px;
+    width: 50px;	
+}
+</style>
  </head>
- <body>
-  
+ <body onload="startGame()"> 
+   
+ <script>
 
+var myGamePiece;
+var myObstacles = [];
+var myScore;
 
+function startGame() {
+    myGamePiece = new component(50, 15, "black", 70, 120);
+    myGamePiece.gravity = 0.05;
+    myScore = new component("40px", "Consolas", "black", 30, 700, "text");
+    myGameArea.start();
+}
 
+var myGameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width = 300;
+        this.canvas.height = 750;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.frameNo = 0;
+        this.interval = setInterval(updateGameArea, 20);
+        },
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+}
 
+function component(width, height, color, x, y, type) {
+    this.type = type;
+    this.score = 0;
+    this.width = width;
+    this.height = height;
+    this.speedX = 0;
+    this.speedY = 0;    
+    this.x = x;
+    this.y = y;
+    this.gravity = 0;
+    this.gravitySpeed = 0;
+    this.update = function() {
+        ctx = myGameArea.context;
+        if (this.type == "text") {
+            ctx.font = this.width + " " + this.height;
+            ctx.fillStyle = color;
+            ctx.fillText(this.text, this.x, this.y);
+        } else {
+            ctx.fillStyle = color;
+            ctx.fillRect(this.y, this.x, this.height, this.width);
+        }
+    }
+    this.newPos = function() {
+        this.gravitySpeed += this.gravity;
+        this.x += this.speedX;
+        this.y += this.speedY + this.gravitySpeed;
+        this.hitBottom();
+    }
+    this.hitBottom = function() {
+        var rockbottom = myGameArea.canvas.height - this.height;
+        if (this.y > rockbottom) {
+            this.y = rockbottom;
+            this.gravitySpeed = 0;
+        }
+    }
+    this.crashWith = function(otherobj) {
+        var myleft = this.x;
+        var myright = this.x + (this.width);
+        var mytop = this.y;
+        var mybottom = this.y + (this.height);
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + (otherobj.width);
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + (otherobj.height);
+        var crash = true;
+        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
+            crash = false;
+        }
+        return crash;
+    }
+}
+
+function updateGameArea() {
+    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
+    for (i = 0; i < myObstacles.length; i += 1) {
+        if (myGamePiece.crashWith(myObstacles[i])) {
+            return;
+        } 
+    }
+    myGameArea.clear();
+    myGameArea.frameNo += 1;
+    if (myGameArea.frameNo == 1 || everyinterval(150)) {
+        x = myGameArea.canvas.height;
+        minHeight = 20;
+        maxHeight = 200;
+        height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
+        minGap = 50;
+        maxGap = 200;
+        gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
+        myObstacles.push(new component(10, height, "Blue", x, 0));
+        myObstacles.push(new component(10, x - height - gap, "blue", x, height + gap));
+    }
+    for (i = 0; i < myObstacles.length; i += 1) {
+        myObstacles[i].x += -1;
+        myObstacles[i].update();
+    }
+    myScore.text="SCORE: " + myGameArea.frameNo;
+    myScore.update();
+    myGamePiece.newPos();
+    myGamePiece.update();
+}
+
+function everyinterval(n) {
+    if ((myGameArea.frameNo / n) % 1 == 0) {return true;}
+    return false;
+}
+
+function accelerate(n) {
+    myGamePiece.gravity = n;
+}
+</script>
+<br>
+    <div id="qwer">
+  <center>
+<button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">ACCELERATE</button>
+   </center>
+   </div>
+   <br>
+ <form>
+ <div id="qwert">
+ <center>
+<input type="button" value="Restart" onclick="ReloadButton()">
+</center>
+  </div>
+<div id="qwe"><button>AboutMe<br>Unofficially</button></div>
+<script>
+function ReloadButton()
+{
+location.href="index.html";
+}
+</script>
+</FORM>
     <header>
 <hgroup>
- 
     <ul>
        <h1>  Zhenya Vovchyk </h1>
-    </ul>
- 
-    
+    </ul>  
 </hgroup>
-
 <nav>
   <ul> 
-
 <img src="https://r0brqg.dm2304.livefilestore.com/y4moCEvBrJxm8N82yCzkXBQ66IzXvkzYRzv6adHzsU4d8U8QGYz8vITJMeTXs03IJhsvwSCrtmpBXZj4-AgdEQIcuK44xd3ITKq6mG5qmoUWyjfC65MMZCbIqcznPNbX-Kv2rzY23pu6Nr0TGVLd1Wvc49rz8Tp4ZL1LRuZ0jtLlTKLxlgjdUIKMH7TGeTVmO58fJ41sYCl5XC_SmQtCp-t5g?width=128&height=164&cropmode=none" width="128" height="164" />
-
    </ul>
  </nav>
-
-
+   <div id="lol">
     <nav>
      <ul>
         <li>Address: Ukraine, Kiev</li>
@@ -37,74 +233,91 @@
         <li>E-mail address: Jen9.Vovchyk@gmail.com</li>
         <li>Education: specialized secondary education</li>
         <li>Schedule: Full-time, , all life</li>
+		<li><a id="Facebook" href="https://www.facebook.com/profile.php?id=100006416323539">My account on Facebook</a>
+		</li>
      </ul>
     </nav>
-
-
-
+   </div>	
     </header>
-
  <section>
+    <div id="lol1">
+	  <ul>
+	   <h2>Objective:</h2>
+	  </ul>
+	   <ul>
+	  <p>Find a stable job in an international company ( And what can be more stable than Microsoft )<br>Start a career junior developer in the Microsoft  and in five years to grow up to timlida,<br> but in generai I think to move Satya Nadella.. 😎</p>
+	   </ul>
+	</div>
    <arrticle> 
- 
      <ul> 
        <h2>Experience: </h2>
       </ul>
    <nav>
  <ul>
-      <li>  Musical Television (MTV) Ukraine - Decorator, administrator</li>
+      <li>I worked on myself</li>
+      <li>Musical Television (MTV) Ukraine - Decorator, administrator</li>
       <li>Restaurant "Fish Place" - cook</li>
       <li>Sushi bar "Asia" - Assistant cook</Li>
       <li>TC "Billa" Delicacy department - Seller</li>
   </ul>
     </nav>
-   
    <ul>
     <h2>Professional skills: </h2>
    </ul>
-
  <nav>
    <ul>
-       <li>At the moment I am working on the project " RocketDrive " </li>
-       <li>Knowledge of Google products, knowledge MIcrosoft Windows, Hyper-V </li>
-       <li> I'm in the Google Translate community. Ukrainian, English, Russian languages</li>
-       <li>Basic knowledge of programming languages </li>
-       <li>Psychology of personality, social psychology, developmental psychology...</li>
-       <li>Excellent leadership and managerial skills</li>
-       <li>Strong organizational skills with attention to detail, analytical skills </li>
-       <li>Modernization of equipment: ( Providing inventory updates for all equipment categories ) </li>
-       <li>First line of technical support </li>
-       <li>Organization and quality control of technical personnel </li>
-       <li>Treatment And analysis of user requests, as well as non-standard situations </li>
+       <li>At the moment I am working on the project "RocketDrive" for Windows.
+	   </li>
+	    <li>WebPageNote - ready web project. 
+	   <a id="WebPageNote" href="#">WebPageNote</a>
+	   <br>
+	   <a id="1" href="#">Second solution</a>
+	   </li>
+       <li>Knowledge of Microsoft products: Windows, Azure, Hyper-V, Visual Studio.<br>( By itself Git, Visual Studio Team Service ) Google products
+	   </li>
+       <li> I'm in the Google Translate community. Ukrainian, English, Russian languages ( Practice English )
+	   </li>
+       <li>Knowledge of HTML,CSS.  Design of internet pages. Basic Knowledge of programming languages…<br> ( I will develop  further in the direction of the language of XAML, Java )
+	   </li>
+       <li>Psychology of personality, social psychology, developmental psychology...
+	   </li>
+       <li>Excellent leadership and managerial skills
+	   </li>
+       <li>Strong organizational skills with attention to detail, analytical skills
+	   </li>
+       <li>Modernization of equipment: ( Providing inventory updates for all equipment categories )
+	   </li>
+       <li>First line of technical support
+	   </li>
+       <li>Organization and quality control of technical personnel
+	   </li>
+       <li>Treatment And analysis of user requests, as well as non-standard situations
+	   </li>
+	   <li>Subtle understanding of the cause-effect relationship
+	   </li>
+	   <li>
+	   Knowledge of the basics of journalism, the ability to submit text in the journalistic style.
+	   </li>
+	   <li>
+	   The ability to quickly learn, understand and work with new and new technologies, methodologies and solutions in the cloud / IT technology space.
+	   </li>
    </ul>
   </nav>
-
-  
    <ul>
       <h2> Personal qualities: </h2>
    </ul>
-
     <nav>
      <ul> 
-        Adequate, resourceful, persuasive (it seems to me), responsibility, independence, self-control. It's not about me ...  ;)     Sense of humor,  neatness, decency, The ability to make decisions in unusual situations.
+        Adequate, resourceful, persuasive (it seems to me), responsibility, independence, self-control. It's not about me ...  ;)<br> Sense of humor,  neatness, decency, The ability to make decisions in unusual situations.
      </ul>
     </nav>
-
    <ul>
      <h2>Bad Personal qualities:</ul>
-   <ul>
-
-  
+   </ul>
     <ul>
- Well, here's a complete set, like a typical bad person, Stupidity, cowardice, greed, meanness, all this  is also not about me. ;)  I have a lot of bad qualities, but I'm working on myself ... 
+ Well, here's a complete set, like a typical bad person, Stupidity, cowardice, greed, meanness, all this  is also not about me. ;) <br> I have a lot of bad qualities, but I'm working on myself ... 
     </ul>
-   
-
-
-
-
 </article>
-     </section>
-
+     </section> 
 </body>
 </html>
